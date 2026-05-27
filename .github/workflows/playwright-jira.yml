@@ -1,0 +1,59 @@
+name: Playwright Automation With Jira Upload
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+jobs:
+  playwright-test:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Execute Playwright Tests
+        run: npx playwright test
+
+      - name: Zip Playwright Report
+        if: always()
+        run: zip -r playwright-report.zip playwright-report
+
+      - name: Upload Playwright Report Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report.zip
+
+      - name: Upload Report To Jira
+        if: always()
+        run: |
+          curl -D- \
+          -u "${{ secrets.JIRA_EMAIL }}:${{ secrets.JIRA_API_TOKEN }}" \
+          -X POST \
+          -H "X-Atlassian-Token: no-check" \
+          -F "file=@playwright-report.zip" \
+          https://your-domain.atlassian.net/rest/api/3/issue/PROJ-101/attachments
+
+      - name: Workflow Completed
+        if: always()
+        run: |
+          echo "Playwright execution completed"
+          echo "Report uploaded to GitHub Artifacts"
+          echo "Report uploaded to Jira"

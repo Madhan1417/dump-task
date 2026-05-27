@@ -49,8 +49,8 @@ jobs:
           -X POST \
           -H "X-Atlassian-Token: no-check" \
           -F "file=@playwright-report.zip" \
-          https://your-domain.atlassian.net/rest/api/3/issue/PROJ-101/attachments
-
+          https://madhann1417.atlassian.net/browse/ST-1
+          
       - name: Workflow Completed
         if: always()
         run: |
